@@ -12,26 +12,30 @@ import matplotlib.pyplot as plt
 # se lavori in tomo parallela θ + 180° sono uguali, mod 180°, golden angle = 111.246
 
 
-
 #golden angles array 
 golden_a = 180*(3 - np.sqrt(5)) / 2  # deg ≈ 111.246°
 golden_a_rad = golden_a*np.pi / 180  # rad 
 num_proj = 360    #select number of projections , int
-theta_start = [ 13.76941013 , 30. ,    40.0310562 ,  56.26164608 , 82.52329215 ,
-  98.75388203 , 108.78493823 , 125.0155281 ,  151.27717418 , 167.50776405] #offset iniziali : angoli di partenza interlacciamento theta_start[i] è l’inizio di una serie interlacciata che crescono con passo costante golden_a
 
- # mod fa rimanere nel range 180 
+#offset iniziali : angoli di partenza interlacciamento theta_start[i] è l’inizio di una serie interlacciata che crescono con passo costante golden_a
+# [ 13.76941013, 30., 40.0310562, 56.26164608, 82.52329215, 98.75388203, 108.78493823, 125.0155281, 151.27717418, 167.50776405]
+theta_start = np.array([
+    13.76941013, 30., 40.0310562, 56.26164608, 82.52329215,
+    98.75388203, 108.78493823, 125.0155281, 151.27717418, 167.50776405
+])
+
+# mod fa rimanere nel range 180 
 golden_angles_tomo = np.mod(
     theta_start[:, None] + np.arange(num_proj) * golden_a,
     180
 ).flatten()
 print("Shape:", golden_angles_tomo.shape)
-print("10 golden angles:", golden_angles_tomo[:10])
+print("10 golden angles:", golden_angles_tomo[:100])
 
  #golden angles sorted, utile da passare al pso 
 
 golden_angles_tomo_sorted = np.sort(golden_angles_tomo)
-print("10 angles sorted:", golden_angles_tomo_sorted[:10])
+print("10 angles sorted:", golden_angles_tomo_sorted[:100])
 
 
 plt.figure(figsize=(6,6))
