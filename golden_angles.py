@@ -23,6 +23,9 @@ print("10 golden angles:", golden_angles_tomo[:10])
 # send to PSO 
 golden_angles_tomo_sorted = np.sort(golden_angles_tomo)
 print("10 angles sorted:", golden_angles_tomo_sorted[:10])
+#----------------------------------------------------------
+# to add : sorted unique angles
+#----------------------------------------------------------
 
 # Plot 
 plt.figure(figsize=(6, 6))
