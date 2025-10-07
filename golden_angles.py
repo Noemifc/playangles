@@ -14,20 +14,24 @@ import matplotlib.pyplot as plt
 
 
 #golden angles array 
-golden_a = 180*(3 - np.sqrt(5)) / 2  # deg
+golden_a = 180*(3 - np.sqrt(5)) / 2  # deg ≈ 111.246°
 golden_a_rad = golden_a*np.pi / 180  # rad 
 num_proj = 360    #select number of projections , int
 theta_start = [ 13.76941013 , 30. ,    40.0310562 ,  56.26164608 , 82.52329215 ,
   98.75388203 , 108.78493823 , 125.0155281 ,  151.27717418 , 167.50776405] #offset iniziali : angoli di partenza interlacciamento theta_start[i] è l’inizio di una serie interlacciata che crescono con passo costante golden_a
 
+ # mod fa rimanere nel range 180 
+golden_angles_tomo = np.mod(
+    theta_start[:, None] + np.arange(num_proj) * golden_a,
+    180
+).flatten()
+print("Shape:", golden_angles_tomo.shape)
+print("10 golden angles:", golden_angles_tomo[:10])
 
-golden_angles_tomo = np.mod(theta_start + np.arange(num_proj) * golden_a, 180) # mod fa rimanere nel range 180 
-print(" 10 golden angles (float):", golden_angles_tomo[:10])
+ #golden angles sorted, utile da passare al pso 
 
-
-# golden-angle sorted 
-golden_angles_tomo_sorted = np.sort(golden_angles_tomo) #golden angles sorted, utile da passare al pso 
-print("10 angles sorted", golden_angles_tomo_sorted[:10])
+golden_angles_tomo_sorted = np.sort(golden_angles_tomo)
+print("10 angles sorted:", golden_angles_tomo_sorted[:10])
 
 
 plt.figure(figsize=(6,6))
@@ -65,87 +69,3 @@ plt.show()
 
 
 
-
-
-
-
-
-
-
-def genang(numproj, nProj_per_rot):
-    """Interlaced angles generator
-    Parameters
-    ----------
-    numproj : int
-            Total number of projections.
-    nProj_per_rot : int
-            Number of projections per rotation.
-    """
-    prime = 3
-    pst = 0
-    pend = 360
-    seq = []
-    i = 0
-    while len(seq) < numproj:
-        b = i
-        i += 1
-        r = 0
-        q = 1 / prime
-        while (b != 0):
-            a = np.mod(b, prime)
-            r += (a * q)
-            q /= prime
-            b = np.floor(b / prime)
-        r *= ((pend-pst) / nProj_per_rot)
-        k = 0
-        while (np.logical_and(len(seq) < numproj, k < nProj_per_rot)):
-            seq.append((pst + (r + k * (pend-pst) / nProj_per_rot))/180*np.pi)
-            k += 1
-    return seq
-
-def line_plot(theta):
-
-    # Plot
-    plt.figure(figsize=(8, 5))
-    plt.plot(theta, marker='o', linestyle='-', color='b')  # you can customize markers, colors, etc.
-    plt.title('Theta values')
-    plt.xlabel('Index')
-    plt.ylabel('Theta (rad)')
-    plt.grid(True)
-    plt.show()
-
-def circle_plot(theta):
-
-    # Convert to x, y coordinates
-    x = np.cos(theta)
-    y = np.sin(theta)
-
-    # Identify rotation number for each point
-    rotations = np.floor(theta / (2 * np.pi)).astype(int)
-    num_rotations = rotations.max() + 1
-
-    # Create the plot
-    plt.figure(figsize=(6, 6))
-    cmap = plt.cm.viridis
-
-    # Plot each rotation with a different color (dots only)
-    for r in range(num_rotations):
-        mask = rotations == r
-        if np.any(mask):
-            plt.scatter(x[mask], y[mask], color=cmap(r / max(1, num_rotations - 1)), s=15, label=f'Rotation {r+1}')
-
-    # Make it look like a circle
-    plt.gca().set_aspect('equal', 'box')
-    plt.title('Theta plotted on a circle (colored per rotation)')
-    plt.xlabel('cos(θ)')
-    plt.ylabel('sin(θ)')
-    plt.grid(True)
-    plt.show()
-
-if __name__ == "__main__":
-
-    ntheta = 45  # Total number of projections
-    nthetap = 15  # Number of angles per rotation
-    theta = np.array(genang(ntheta, nthetap), dtype='float32')
-    line_plot(theta)
-    circle_plot(theta)
