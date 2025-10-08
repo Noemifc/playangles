@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+end_angle = 360.
 # golden angle (mod 180) : tomo p
-golden_a = 180 * (3 - np.sqrt(5)) / 2  # ≈ 111.246°
+golden_a = end_angle * (3 - np.sqrt(5)) / 2  # ≈ 111.246°
 num_proj =100 
 
 # interlaced golden-angle sequence
@@ -14,7 +15,7 @@ theta_start = np.array([
 
 golden_angles_tomo = np.mod(
     theta_start[:, None] + np.arange(num_proj) * golden_a,
-    180
+    end_angle
 ).flatten()
 
 print("Shape:", golden_angles_tomo.shape)
@@ -32,8 +33,8 @@ plt.figure(figsize=(6, 6))
 colors = plt.cm.tab10(np.linspace(0, 1, len(theta_start)))
 
 for i, start in enumerate(theta_start):
-    angles = np.mod(start + np.arange(num_proj) * golden_a, 180)
+    angles = np.mod(start + np.arange(num_proj) * golden_a, end_angle)
     plt.polar(np.deg2rad(angles), np.ones_like(angles), '.', alpha=0.6, color=colors[i])
 
-plt.title("Interlaced golden-angle sampling (mod 180°)")
+plt.title("Interlaced golden-angle sampling (mod %.1f°)" % end_angle)
 plt.show()
