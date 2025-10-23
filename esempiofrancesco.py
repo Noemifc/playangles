@@ -22,9 +22,6 @@ Legge Manufacturer e Model per capire il tipo di camera.
 Se il modello è uno degli Oryx elenca PV addizionali (trigger, exposure mode, ecc.).
 In ogni caso definisce due PV del PSO da 2bmb:TomoScan:.
 per i modelli non supportati, ritorna None così le funzioni chiamanti possono interrompersi.
-
-
-
 """   
     # detector pv's : I detector PV (Process Variables) sono variabili EPICS che rappresentano parametri e stati del rivelatore
 # (camera, detector, o sistema di acquisizione).
@@ -65,7 +62,14 @@ per i modelli non supportati, ritorna None così le funzioni chiamanti possono i
     manufacturer = epics_PVs['CamManufacturer_RBV'].get(as_string=True)
     model = epics_PVs['CamModel'].get(as_string=True)
 
-    if model in ('Oryx ORX-10G-51S5M', 'Oryx ORX-10G-310S9M'):
+#Leggono il valore attuale di quei due PV dal sistema EPICS.
+# .get() → chiede all’IOC di restituire il valore del PV
+# as_string=True → forza il risultato a essere una stringa leggibile (anche se internamente EPICS lo rappresenta in altro modo)
+
+
+#che tipo di camera EPICS stai usando e creare i collegamenti (PV) giusti per quella camera
+
+    if model in ('Oryx ORX-10G-51S5M', 'Oryx ORX-10G-310S9M'):                         # controlla che modello di camera hai collegato e se è Oryx
         logging.info('Detector %s model %s detected', manufacturer, model)
         epics_PVs['Cam1AcquireTimeAuto']   = PV(detector_prefix + 'AcquireTimeAuto')
         epics_PVs['Cam1FrameRateOnOff']    = PV(detector_prefix + 'FrameRateEnable')
@@ -88,7 +92,7 @@ per i modelli non supportati, ritorna None così le funzioni chiamanti possono i
 
 
 def frame_rate():
-    detector_prefix = '2bmSP1:'
+    detector_prefix = '2bmSP1:'                 #stai definendo il prefisso EPICS per tutti i PV (Process Variables) legati al sistema di tomografia di 2-BM (la beamline)
     epics_PVs = init_epics_PVs(detector_prefix)
 
     if epics_PVs is None:
