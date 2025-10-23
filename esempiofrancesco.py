@@ -4,15 +4,32 @@ import logging
 import numpy as np
 from epics import PV
 
+# Cosa fa: Connette PV EPICS per una camera FLIR/Teledyne via areaDetector (prefisso 2bmSP1:) e per il PSO (prefisso 2bmb:TomoScan:
+# Misura il frame rate attuale con la camera in acquisizione continua.
+# Stima il frame time (tempo minimo tra trigger) combinando exposure reale e readout time dipendente da modello/pixel format.
+# Calcola la velocità del rotary stage per una fly scan, imponendo passi angolari allineati ai conti encoder (interi).
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 
 def init_epics_PVs(detector_prefix):
     epics_PVs = {}
+"""
+Costruisce i PV della camera usando camera_prefix = detector_prefix + 'cam1:' e quelli dell’immagine con image1:.
+Legge Manufacturer e Model per capire il tipo di camera.
+Se il modello è uno degli Oryx elenca PV addizionali (trigger, exposure mode, ecc.).
+In ogni caso definisce due PV del PSO da 2bmb:TomoScan:.
+per i modelli non supportati, ritorna None così le funzioni chiamanti possono interrompersi.
 
-    # detector pv's
-    camera_prefix = detector_prefix + 'cam1:' 
+
+
+"""   
+    # detector pv's : I detector PV (Process Variables) sono variabili EPICS che rappresentano parametri e stati del rivelatore
+# (camera, detector, o sistema di acquisizione).
+    camera_prefix = detector_prefix + 'cam1:'     # pv ha un nome univoco
+# crea la parte completa del nome dei PV che appartengono al driver della camera ongi 
 
     epics_PVs['CamManufacturer_RBV']       = PV(camera_prefix + 'Manufacturer_RBV')
     epics_PVs['CamModel']                  = PV(camera_prefix + 'Model_RBV')
@@ -38,8 +55,12 @@ def init_epics_PVs(detector_prefix):
     epics_PVs['ArrayRate_RBV']             = PV(camera_prefix + 'ArrayRate_RBV')
 
     image_prefix = detector_prefix + 'image1:'
-    epics_PVs['Image']                     = PV(image_prefix + 'ArrayData')
-    epics_PVs['Cam1Display']               = PV(image_prefix + 'EnableCallbacks')
+    epics_PVs['Image']                     = PV(image_prefix + 'ArrayData')       # Questo PV contiene il buffer dei pixel dell’immagine (un array 2D o 3D di numeri)
+    epics_PVs['Cam1Display']               = PV(image_prefix + 'EnableCallbacks') # Questo è un interruttore (0/1) che abilita o disabilita l’invio di immagini ai plugin downstream (o ai viewer come ImageJ/ADViewer)
+
+# costruiamo un prefisso completo per un altro modulo di areaDetector, chiamato image1: ma un plugin software di areaDetector.
+# image1: non è la camera, ma un plugin software di areaDetector utile a gestire flusso di immagini , ricevere dati raw camera, inviare immagini al altri plugin
+# e fornire PV per i dati grezzi (ArrayData) o per abilitare i callback
 
     manufacturer = epics_PVs['CamManufacturer_RBV'].get(as_string=True)
     model = epics_PVs['CamModel'].get(as_string=True)
